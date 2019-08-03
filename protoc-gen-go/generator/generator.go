@@ -43,6 +43,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/obase/api/x"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -2049,17 +2050,18 @@ func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLev
 
 // generateInternalStructFields just adds the XXX_<something> fields to the message struct.
 func (g *Generator) generateInternalStructFields(mc *msgCtx, topLevelFields []topLevelField) {
-	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\"`") // prevent unkeyed struct literals
+	/*---------------START: 支持option field----------------*/
+	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\" bson:\"-\"`") // prevent unkeyed struct literals
 	if len(mc.message.ExtensionRange) > 0 {
 		messageset := ""
 		if opts := mc.message.Options; opts != nil && opts.GetMessageSetWireFormat() {
 			messageset = "protobuf_messageset:\"1\" "
 		}
-		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\"`")
+		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\" bson:\"-\"`")
 	}
-	g.P("XXX_unrecognized\t[]byte `json:\"-\"`")
-	g.P("XXX_sizecache\tint32 `json:\"-\"`")
-
+	g.P("XXX_unrecognized\t[]byte `json:\"-\" bson:\"-\"`")
+	g.P("XXX_sizecache\tint32 `json:\"-\" bson:\"-\"`")
+	/*---------------END: 支持option field----------------*/
 }
 
 // generateOneofFuncs adds all the utility functions for oneof, including marshalling, unmarshalling and sizer.
@@ -2240,8 +2242,23 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		fieldName, fieldGetterName := ns[0], ns[1]
 		typename, wiretype := g.GoType(message, field)
 		jsonName := *field.Name
-		tag := fmt.Sprintf("protobuf:%s json:%q", g.goTag(message, field, wiretype), jsonName+",omitempty")
-
+		//tag := fmt.Sprintf("protobuf:%s json:%q", g.goTag(message, field, wiretype), jsonName+",omitempty")
+		/*---------------START: 支持option field----------------*/
+		var js, bs string
+		fopt, _ := proto.GetExtension(field.Options, x.E_Field)
+		switch fopt := fopt.(type) {
+		case *x.Field:
+			js = fopt.Json
+			bs = fopt.Bson
+		}
+		if js == "" {
+			js = jsonName + ",omitempty"
+		}
+		if bs == "" {
+			bs = jsonName
+		}
+		tag := fmt.Sprintf("protobuf:%s json:%q bson:%q", g.goTag(message, field, wiretype), js, bs)
+		/*---------------END: 支持option field----------------*/
 		oneof := field.OneofIndex != nil
 		if oneof && oFields[*field.OneofIndex] == nil {
 			odp := message.OneofDecl[int(*field.OneofIndex)]
@@ -2264,7 +2281,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			of := oneofField{
 				fieldCommon: fieldCommon{
 					goName:     fname,
-					getterName: "Get"+fname,
+					getterName: "Get" + fname,
 					goType:     dname,
 					tags:       tag,
 					protoName:  odp.GetName(),
