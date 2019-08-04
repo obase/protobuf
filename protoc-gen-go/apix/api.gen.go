@@ -3,8 +3,7 @@ package apix
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/generator"
-	"github.com/obase/api"
-	. "github.com/obase/api/x"
+	"github.com/obase/api/x"
 	"strings"
 )
 
@@ -46,10 +45,10 @@ func (g *apix) typeName(name string) string {
 	return g.gen.TypeName(obj)
 }
 
-func appendPackFunc(pfs []*PackFunc, pb proto.Message, extension *proto.ExtensionDesc) {
+func appendPackFunc(pfs []*x.PackFunc, pb proto.Message, extension *proto.ExtensionDesc) {
 	tmp, err := proto.GetExtension(pb, extension)
 	if err == nil {
-		if pks, ok := tmp.([]*PackFunc); ok {
+		if pks, ok := tmp.([]*x.PackFunc); ok {
 			pfs = append(pfs, pks...)
 		}
 	}
@@ -65,7 +64,7 @@ func (g *apix) Generate(file *generator.FileDescriptor) {
 
 	g.addImport("context", "")
 	g.addImport("encoding/json", "")
-	g.addImport(api.APIX_PACK_PATH, "")
+	g.addImport(APIX_PACK_PATH, "")
 
 	val := new(Template)
 	val.FileName = identifier(*file.Name)
@@ -73,18 +72,18 @@ func (g *apix) Generate(file *generator.FileDescriptor) {
 	val.Imports = make(map[string]interface{})
 
 	// File Option处理
-	tmp, err := proto.GetExtension(file.Options, E_ServerOption)
+	tmp, err := proto.GetExtension(file.Options, x.E_ServerOption)
 	if err == nil {
-		if pfs, ok := tmp.([]*PackFunc); ok {
+		if pfs, ok := tmp.([]*x.PackFunc); ok {
 			for _, pf := range pfs {
 				val.ServerOption = append(val.ServerOption, g.addImport(pf.Pack, pf.Func))
 			}
 		}
 	}
 
-	tmp, err = proto.GetExtension(file.Options, E_MiddleFilter)
+	tmp, err = proto.GetExtension(file.Options, x.E_MiddleFilter)
 	if err == nil {
-		if pfs, ok := tmp.([]*PackFunc); ok {
+		if pfs, ok := tmp.([]*x.PackFunc); ok {
 			for _, pf := range pfs {
 				val.MiddleFilter = append(val.MiddleFilter, g.addImport(pf.Pack, pf.Func))
 			}
@@ -95,9 +94,9 @@ func (g *apix) Generate(file *generator.FileDescriptor) {
 	for _, message := range file.MessageType {
 		var fileok bool
 		for _, field := range message.Field {
-			tmp, err = proto.GetExtension(field.Options, E_Field)
+			tmp, err = proto.GetExtension(field.Options, x.E_Field)
 			if err == nil {
-				if fld, ok := tmp.(*Field); ok {
+				if fld, ok := tmp.(*x.Field); ok {
 					if !fileok && fld.File {
 						fdesc := new(fileDesc)
 						fdesc.MessageName = generator.CamelCase(*message.Name)
@@ -115,16 +114,16 @@ func (g *apix) Generate(file *generator.FileDescriptor) {
 		sdesc := new(serviceDesc)
 		sdesc.Name = generator.CamelCase(*service.Name)
 
-		tmp, err = proto.GetExtension(service.Options, E_Group)
+		tmp, err = proto.GetExtension(service.Options, x.E_Group)
 		if err == nil {
-			if grp, ok := tmp.(*Group); ok {
+			if grp, ok := tmp.(*x.Group); ok {
 				sdesc.GroupPath = grp.Path
 			}
 		}
 
-		tmp, err = proto.GetExtension(service.Options, E_GroupFilter)
+		tmp, err = proto.GetExtension(service.Options, x.E_GroupFilter)
 		if err == nil {
-			if pfs, ok := tmp.([]*PackFunc); ok {
+			if pfs, ok := tmp.([]*x.PackFunc); ok {
 				for _, pf := range pfs {
 					sdesc.GroupFilter = append(sdesc.GroupFilter, g.addImport(pf.Pack, pf.Func))
 				}
@@ -145,33 +144,33 @@ func (g *apix) Generate(file *generator.FileDescriptor) {
 			val.Imports[g.typePath(*method.InputType)] = nil
 			val.Imports[g.typePath(*method.OutputType)] = nil
 
-			tmp, err = proto.GetExtension(method.Options, E_Handle)
+			tmp, err = proto.GetExtension(method.Options, x.E_Handle)
 			if err == nil {
-				if hdl, ok := tmp.(*Handle); ok {
+				if hdl, ok := tmp.(*x.Handle); ok {
 					mdesc.HandlePath = hdl.Path
 					mdesc.HandleBody = hdl.Body
 				}
 			}
 
-			tmp, err = proto.GetExtension(method.Options, E_HandleFilter)
+			tmp, err = proto.GetExtension(method.Options, x.E_HandleFilter)
 			if err == nil {
-				if pfs, ok := tmp.([]*PackFunc); ok {
+				if pfs, ok := tmp.([]*x.PackFunc); ok {
 					for _, pf := range pfs {
 						mdesc.HandleFilter = append(mdesc.HandleFilter, g.addImport(pf.Pack, pf.Func))
 					}
 				}
 			}
 
-			tmp, err = proto.GetExtension(method.Options, E_Socket)
+			tmp, err = proto.GetExtension(method.Options, x.E_Socket)
 			if err == nil {
-				if skt, ok := tmp.(*Socket); ok {
+				if skt, ok := tmp.(*x.Socket); ok {
 					mdesc.SocketPath = skt.Path
 				}
 			}
 
-			tmp, err = proto.GetExtension(method.Options, E_SocketFilter)
+			tmp, err = proto.GetExtension(method.Options, x.E_SocketFilter)
 			if err == nil {
-				if pfs, ok := tmp.([]*PackFunc); ok {
+				if pfs, ok := tmp.([]*x.PackFunc); ok {
 					for _, pf := range pfs {
 						mdesc.SocketFilter = append(mdesc.SocketFilter, g.addImport(pf.Pack, pf.Func))
 					}

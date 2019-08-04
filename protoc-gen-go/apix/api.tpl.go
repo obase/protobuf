@@ -1,11 +1,12 @@
 package apix
 
 import (
-	. "github.com/obase/api/x"
+	"github.com/obase/api/x"
 	"strings"
 	"text/template"
 )
 
+const APIX_PACK_PATH = "github.com/obase/apix"
 const SERVICE_TEMPLATE = `
 {{- $fname := .FileName}}
 func init_{{$fname}}(server *apix.Server) {
@@ -121,7 +122,7 @@ type methodDesc struct {
 	OuterOutputType string
 	OutputType      string
 	HandlePath      string
-	HandleBody      Body
+	HandleBody      x.Body
 	HandleFilter    []*funcDesc
 	SocketPath      string
 	SocketFilter    []*funcDesc
