@@ -1535,8 +1535,8 @@ func (g *Generator) goTag(message *Descriptor, field *descriptor.FieldDescriptor
 	}
 	packed := ""
 	if (field.Options != nil && field.Options.GetPacked()) ||
-		// Per https://developers.google.com/protocol-buffers/docs/proto3#simple:
-		// "In proto3, repeated fields of scalar numeric types use packed encoding by default."
+	// Per https://developers.google.com/protocol-buffers/docs/proto3#simple:
+	// "In proto3, repeated fields of scalar numeric types use packed encoding by default."
 		(message.proto3() && (field.Options == nil || field.Options.Packed == nil) &&
 			isRepeated(field) && isScalar(field)) {
 		packed = ",packed"
@@ -2051,16 +2051,16 @@ func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLev
 // generateInternalStructFields just adds the XXX_<something> fields to the message struct.
 func (g *Generator) generateInternalStructFields(mc *msgCtx, topLevelFields []topLevelField) {
 	/*---------------START: 支持option field----------------*/
-	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\" bson:\"-\"`") // prevent unkeyed struct literals
+	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\" bson:\"-\" yaml:\"-\"`") // prevent unkeyed struct literals
 	if len(mc.message.ExtensionRange) > 0 {
 		messageset := ""
 		if opts := mc.message.Options; opts != nil && opts.GetMessageSetWireFormat() {
 			messageset = "protobuf_messageset:\"1\" "
 		}
-		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\" bson:\"-\"`")
+		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\" bson:\"-\" yaml:\"-\"`")
 	}
-	g.P("XXX_unrecognized\t[]byte `json:\"-\" bson:\"-\"`")
-	g.P("XXX_sizecache\tint32 `json:\"-\" bson:\"-\"`")
+	g.P("XXX_unrecognized\t[]byte `json:\"-\" bson:\"-\" yaml:\"-\"`")
+	g.P("XXX_sizecache\tint32 `json:\"-\" bson:\"-\" yaml:\"-\"`")
 	/*---------------END: 支持option field----------------*/
 }
 
@@ -2244,12 +2244,13 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		jsonName := *field.Name
 		//tag := fmt.Sprintf("protobuf:%s json:%q", g.goTag(message, field, wiretype), jsonName+",omitempty")
 		/*---------------START: 支持option field----------------*/
-		var js, bs string
+		var js, bs, ym string
 		fopt, _ := proto.GetExtension(field.Options, x.E_Field)
 		switch fopt := fopt.(type) {
 		case *x.Field:
 			js = fopt.Json
 			bs = fopt.Bson
+			ym = fopt.Yaml
 		}
 		if js == "" {
 			js = jsonName + ",omitempty"
@@ -2257,7 +2258,10 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		if bs == "" {
 			bs = jsonName
 		}
-		tag := fmt.Sprintf("protobuf:%s json:%q bson:%q", g.goTag(message, field, wiretype), js, bs)
+		if ym == "" {
+			ym = jsonName + ",omitempty"
+		}
+		tag := fmt.Sprintf("protobuf:%s json:%q bson:%q yaml:%q", g.goTag(message, field, wiretype), js, bs, ym)
 		/*---------------END: 支持option field----------------*/
 		oneof := field.OneofIndex != nil
 		if oneof && oFields[*field.OneofIndex] == nil {
