@@ -9,7 +9,7 @@ import (
 const APIX_PACK_PATH = "github.com/obase/apix"
 const SERVICE_TEMPLATE = `
 {{- $fname := .FileName}}
-func init_{{$fname}}(server *apix.Server) {
+func init_{{$fname}}(server *apix.XServer) {
 	{{- range .ServerOption}}
 	server.ServerOption({{.Name}}.{{.Func}})
 	{{- end}}
@@ -32,7 +32,7 @@ func func_{{$sname}}_{{.Name}}(service {{$sname}}Server) apix.MethodFunc {
 	}
 }
 {{end}}
-func Register{{$sname}}Service(server *apix.Server, service {{$sname}}Server) {
+func Register{{$sname}}Service(server *apix.XServer, service {{$sname}}Server) {
 	var smeta *apix.Service
 	var hmeta *apix.Method
 
