@@ -51,13 +51,10 @@ func main() {
 		ImportRewriteFunc: importRewriteFunc,
 	}.Run(func(gen *protogen.Plugin) error {
 		grpc := false
-		pbapi := false
 		for _, plugin := range strings.Split(*plugins, ",") {
 			switch plugin {
 			case "grpc":
 				grpc = true
-			case "pbapi":
-				pbapi = true
 			default:
 				return fmt.Errorf("protoc-gen-go: unknown plugin %q", plugin)
 			}
@@ -69,8 +66,6 @@ func main() {
 			g := gengo.GenerateFile(gen, f)
 			if grpc {
 				gengogrpc.GenerateFileContent(gen, f, g)
-			}
-			if pbapi {
 				gengopbapi.GenerateFileContent(gen, f, g)
 			}
 		}
