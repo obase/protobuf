@@ -21,7 +21,8 @@ func GenerateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 
 	obj := new(PbapiObject)
 	obj.Package = string(file.Desc.Name())
-	obj.GoPackage = string(file.GoPackageName)
+	obj.GoPackageName = string(file.GoPackageName)
+	obj.GoImportPath = string(file.GoImportPath)
 	obj.Imports = make(map[string]string)
 
 	for _, service := range file.Services {

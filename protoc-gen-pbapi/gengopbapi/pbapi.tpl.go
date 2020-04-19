@@ -34,16 +34,15 @@ package service
 
 import (
 	"context"
-	{{- range $k, $v := .Imports}}
-	"{{$k}}"
-	{{- end}}
+	"{{.GoImportPath}}"
 )
+{{- $palias := .GoPackageName}}
 {{- range .Services}}
 {{- $sname := .GoName}}
 type {{$sname}}Service struct {}
 var _ {{$pname}}.{{$sname}}Server = (*{{$sname}}Service)(nil)
 {{- range .Methods}}
-func (s *{{$sname}}Service) {{.Name}}(ctx context.Context, req *{{.OuterInputType}}) (rsp *{{.OuterOutputType}}, err error) {
+func (s *{{$sname}}Service) {{.Name}}(ctx context.Context, req *{{$palias}}.{{.OuterInputType}}) (rsp *{{$palias}}.{{.OuterOutputType}}, err error) {
 	return
 }
 {{- end}}
@@ -61,10 +60,11 @@ func ExecuteService(data *PbapiObject) string {
 }
 
 type PbapiObject struct {
-	Package   string // pb包名, 例如"google.api"
-	GoPackage string // go包名, 例如"google_api"
-	Services  []*ServiceDesc
-	Imports   map[string]string
+	Package       string // pb包名, 例如"google.api"
+	GoPackageName string // go包名, 例如"google_api"
+	GoImportPath  string
+	Services      []*ServiceDesc
+	Imports       map[string]string
 }
 
 type ServiceDesc struct {
