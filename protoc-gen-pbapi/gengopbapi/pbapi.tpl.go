@@ -34,7 +34,7 @@ package service
 
 import (
 	"context"
-	"{{.GoImportPath}}"
+	// package path for {{.GoPackageName}}
 )
 {{- $palias := .GoPackageName}}
 {{- range .Services}}
