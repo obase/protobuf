@@ -16,8 +16,8 @@ func GenerateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	}
 
 	// 导入依赖package
-	g.Import(protogen.GoImportPath("context"))
-	g.Import(protogen.GoImportPath("encoding/json"))
+	g.QualifiedGoIdent(protogen.GoIdent{GoName: "context", GoImportPath: "context"})
+	g.QualifiedGoIdent(protogen.GoIdent{GoName: "json", GoImportPath: "encoding/json"})
 
 	obj := new(PbapiObject)
 	obj.Package = string(file.Desc.Name())

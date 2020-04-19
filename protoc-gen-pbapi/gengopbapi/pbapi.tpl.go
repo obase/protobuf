@@ -11,19 +11,20 @@ const SERVICE_TEMPLATE = `
 {{- $sname := .Name}}
 {{- $sname_go := .GoName}}
 // service: {{$sname}}
-func Register{{$sname_go}}ServerHandler(impl interface{}) (*grpc.ServiceDesc, string, string, string, map[string]func(context.Context, []byte) (interface{}, error)) {
-	service := ({{$sname_go}}Server)(impl)
+func Register{{$sname_go}}ServerHandler(impl interface{}) (*grpc.ServiceDesc, string, string, map[string]func(context.Context, []byte) (interface{}, error)) {
+	service := impl.({{$sname_go}}Server)
 	adapters := make(map[string]func(context.Context, []byte) (interface{}, error))
 	{{range .Methods}}
 	// method: {{.Name}}
-	adapters["{{.Name}}"] = func(ctx context.Context, data []byte) (interface{}, error) {
+	adapters["{{.Name}}"] = func(ctx context.Context, data []byte) (ret interface{}, err error) {
 		var req *{{.InputType}}
 		if len(data) > 0 {
-			if err := json.Unmarshal(data, &req); err != nil {
-				return nil, err
+			if err = json.Unmarshal(data, &req); err != nil {
+				return
 			}
 		}
-		return service.{{.Name}}(ctx, req)
+		ret, err = service.{{.Name}}(ctx, req)
+		return
 	}
 	{{- end}}
 	return &_{{$sname_go}}_serviceDesc, "{{$pname}}", "{{.Name}}", adapters
