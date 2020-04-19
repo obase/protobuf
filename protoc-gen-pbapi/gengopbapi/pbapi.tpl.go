@@ -36,7 +36,6 @@ import (
 	"{{$k}}"
 	{{- end}}
 )
-{{- $fpack := .Fpack}}
 {{- range .Services}}
 {{- $sname := .GoName}}
 type {{$sname}}Service struct {}
