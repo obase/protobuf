@@ -48,8 +48,7 @@ func (s *{{$sname}}Service) {{.Name}}(ctx context.Context, req *{{.OuterInputTyp
 }
 {{- end}}
 {{- end}}
-
-*---------------autogen service implement------------------/
+---------------autogen service implement------------------*/
 `
 
 func ExecuteService(data *PbapiObject) string {
