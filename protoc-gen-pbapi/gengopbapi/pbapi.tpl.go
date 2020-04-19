@@ -30,6 +30,8 @@ func Register{{$sname_go}}ServerHandler(impl interface{}) (*grpc.ServiceDesc, st
 }
 {{- end}}
 /*---------------autogen service implement------------------
+package service
+
 import (
 	"context"
 	{{- range $k, $v := .Imports}}
@@ -46,7 +48,8 @@ func (s *{{$sname}}Service) {{.Name}}(ctx context.Context, req *{{.OuterInputTyp
 }
 {{- end}}
 {{- end}}
-*/
+
+*---------------autogen service implement------------------/
 `
 
 func ExecuteService(data *PbapiObject) string {
