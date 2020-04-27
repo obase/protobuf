@@ -31,11 +31,8 @@ func Register{{$sname_go}}ServerHandler(impl interface{}) (*grpc.ServiceDesc, st
 }
 {{- end}}
 /*---------------autogen service implement------------------
-package service
-
 import (
 	"context"
-	// TBD: path for package "{{.GoPackageName}}"
 )
 {{- $palias := .GoPackageName}}
 {{- range .Services}}
